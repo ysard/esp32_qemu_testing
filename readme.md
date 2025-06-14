@@ -38,7 +38,13 @@ More info:
 
 ## Debugging
 
-GDB debugging property is still a work-in-progress.  The GDB version that is installed for Platformio has a dependency on an older version of Python and does not play nice on newer operating system versions.  Newer versions of GDB can be downloaded [here](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/tools/idf-tools.html#xtensa-esp-elf-gdb).  The extra script `extra_scripts/qemu_gdb_override.py` will check for an `XTENSA_ESP32_ELF_GBD_OVERRIDE` environment variable and use that GDB instead of the standard Platformio version.
+The standard Espressif Arduino support has ended.  The [pioarduino fork](https://github.com/pioarduino/platform-espressif32) has continued the process of building the Arduino framework around more recent espressif versions.  To get the proper emulator, you will need to set up the project to look similar to the following:
+
+```
+[esp32]
+  framework = arduino
+  platform = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
+```
 
 As it stands, "PIO Debug (without uploading)" kind of works as long as the emulator has already been launched.  With that said, it is not currently working very well.  Feedback on how to improve this would be welcome.
 
