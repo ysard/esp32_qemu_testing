@@ -6,14 +6,18 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 #*********************************************************************************/
 Import("env") # type: ignore
+import os
 import subprocess
 
 def build_emulator_image(output_path):
     """Build a flash image for use in the emulator"""
     # print(env.Dump())
 
+    platform = env.PioPlatform() # type: ignore
+    ESPTOOL_DIR = platform.get_package_dir("tool-esptoolpy")
+
     command = [ 
-        env.File('$PROJECT_PACKAGES_DIR//tool-esptoolpy/esptool.py').abspath,  # type: ignore
+        os.path.join(ESPTOOL_DIR, 'esptool.py'),
         '--chip', env['BOARD_MCU'], # type: ignore
         'merge_bin',
         '-o', output_path,
@@ -25,7 +29,8 @@ def build_emulator_image(output_path):
         '0x8000', env.File('$BUILD_DIR/partitions.bin').abspath, # type: ignore
         '0x10000', env.File('$BUILD_DIR/firmware.bin').abspath, # type: ignore
     ]
- 
+
+    print(f"Building image with command: {' '.join(command)}")
     result = subprocess.run(command, capture_output=True)
     if result.returncode != 0:
         print(result.stdout)
@@ -39,7 +44,7 @@ def start_qemu_emulator(source, target, env):
     """Custom upload function that starts ESP32 QEMU instead of flashing"""
     
     # Get the compiled firmware path
-    flash_image = str(source[0])
+    flash_image = env.File('$BUILD_DIR/flash_image.bin').abspath
     if not build_emulator_image(flash_image):
         return
     
@@ -51,11 +56,11 @@ def start_qemu_emulator(source, target, env):
         '-display', 'gtk',
         '-serial', 'stdio',
         '-d', 'guest_errors',
-        '-s', '-S'
+        # '-s', '-S'
    ]
     
     print(f"Starting ESP32 QEMU emulator...")
-    print(f"Command: {' '.join(qemu_cmd)}")
+    print(f"Emulator Command: {' '.join(qemu_cmd)}")
     
     try:
         # Start QEMU (this will block until QEMU exits)
