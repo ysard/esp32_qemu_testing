@@ -46,7 +46,7 @@ The standard Espressif Arduino support has ended.  The [pioarduino fork](https:/
   platform = https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip
 ```
 
-As it stands, "PIO Debug (without uploading)" kind of works as long as the emulator has already been launched.  With that said, it is not currently working very well.  Feedback on how to improve this would be welcome.
+As it stands, "PIO Debug (without uploading)" works as long as the emulator has already been launched.
 
 ## Networking
 TBD

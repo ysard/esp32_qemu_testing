@@ -56,7 +56,7 @@ def start_qemu_emulator(source, target, env):
         '-display', 'gtk',
         '-serial', 'stdio',
         '-d', 'guest_errors',
-        # '-s', '-S'
+        '-s', '-S'
    ]
     
     print(f"Starting ESP32 QEMU emulator...")
