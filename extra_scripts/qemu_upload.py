@@ -11,8 +11,6 @@ import subprocess
 
 def build_emulator_image(output_path):
     """Build a flash image for use in the emulator"""
-    # print(env.Dump())
-
     platform = env.PioPlatform() # type: ignore
     ESPTOOL_DIR = platform.get_package_dir("tool-esptoolpy")
 
@@ -39,7 +37,6 @@ def build_emulator_image(output_path):
         print("Image built")
         return True
 
-
 def start_qemu_emulator(source, target, env):
     """Custom upload function that starts ESP32 QEMU instead of flashing"""
     
@@ -56,9 +53,12 @@ def start_qemu_emulator(source, target, env):
         '-display', 'gtk',
         '-serial', 'stdio',
         '-d', 'guest_errors',
-        '-s', '-S'
-   ]
+    ]
     
+    # print(env.Dump())
+    if env.GetProjectOption("build_type") == 'debug':
+        qemu_cmd = qemu_cmd + [ '-s', '-S' ]
+
     print(f"Starting ESP32 QEMU emulator...")
     print(f"Emulator Command: {' '.join(qemu_cmd)}")
     
