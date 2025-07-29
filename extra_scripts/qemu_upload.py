@@ -9,26 +9,39 @@ Import("env") # type: ignore
 import os
 import subprocess
 
-def build_emulator_image(output_path):
+platform = env.PioPlatform() # type: ignore
+board_config = env.BoardConfig() # type: ignore
+build_mcu = board_config.get("build.mcu")
+
+def build_emulator_image(firmware_path):
     """Build a flash image for use in the emulator"""
-    platform = env.PioPlatform() # type: ignore
+
     ESPTOOL_DIR = platform.get_package_dir("tool-esptoolpy")
+
+    # Determine the bootloader offset based on the target device
+    match build_mcu:
+        case "esp32" | "esp32s2":
+            bootloader_offset = "0x1000"
+        case "esp32p4":
+            bootloader_offset = "0x2000"
+        case _:
+            bootloader_offset = "0x0000"
 
     command = [ 
         os.path.join(ESPTOOL_DIR, 'esptool.py'),
-        '--chip', env['BOARD_MCU'], # type: ignore
+        '--chip', build_mcu,
         'merge_bin',
-        '-o', output_path,
-        '--fill-flash-size', '4MB',
+        '-o', firmware_path,
+        '--fill-flash-size', board_config.get("upload.flash_size"), 
         '--flash_size', 'keep',
         '--flash_mode', env['BOARD_FLASH_MODE'], # type: ignore
         '--flash_freq', '40m',
-        '0x1000', env.File('$BUILD_DIR/bootloader.bin').abspath, # type: ignore
+        bootloader_offset, env.File('$BUILD_DIR/bootloader.bin').abspath, # type: ignore
         '0x8000', env.File('$BUILD_DIR/partitions.bin').abspath, # type: ignore
         '0x10000', env.File('$BUILD_DIR/firmware.bin').abspath, # type: ignore
     ]
 
-    print(f"Building image with command: {' '.join(command)}")
+    print(f"Building image with command:\n {' '.join(command)}")
     result = subprocess.run(command, capture_output=True)
     if result.returncode != 0:
         print(result.stdout)
@@ -48,7 +61,7 @@ def start_qemu_emulator(source, target, env):
     # QEMU command and arguments
     qemu_cmd = [
         'qemu-system-xtensa',
-        '-machine', 'esp32',
+        '-machine', build_mcu,
         "-drive", f"file={flash_image},if=mtd,format=raw",
         '-display', 'gtk',
         '-serial', 'stdio',
