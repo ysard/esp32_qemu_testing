@@ -5,9 +5,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 #*********************************************************************************/
-Import("env") # type: ignore
 import os
 import subprocess
+
+Import("env") # type: ignore
 
 platform = env.PioPlatform() # type: ignore
 board_config = env.BoardConfig() # type: ignore
