@@ -29,7 +29,7 @@ ninja -C build
 
 ## Building for Emulator
 
-In this example project, the upload target has been overriden via [qemu_upload.py](extra-scripts/qemu_upload.py) to build a flash image and launch the emulator.
+In this example project, the upload target has been overriden via [qemu_upload.py](extra_scripts/qemu_upload.py) to build a flash image and launch the emulator.
 
 More info:
 * https://github.com/espressif/esp-toolchain-docs/blob/main/gcc/build-and-run-native-app.md
