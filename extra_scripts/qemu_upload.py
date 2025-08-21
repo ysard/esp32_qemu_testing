@@ -1,20 +1,20 @@
-#**********************************************************************************
+# *****************************************************************************
 # Copyright (C) 2025 Craig Setera
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
-#*********************************************************************************/
+# *****************************************************************************
 import os
 import subprocess
 
-Import("env") # type: ignore
+Import("env")  # type: ignore
 
-platform = env.PioPlatform() # type: ignore
-board_config = env.BoardConfig() # type: ignore
+platform = env.PioPlatform()  # type: ignore
+board_config = env.BoardConfig()  # type: ignore
 build_mcu = board_config.get("build.mcu")
 # Get the compiled firmware path
-flash_image = env.File("$BUILD_DIR/flash_image.bin").abspath # type: ignore
+flash_image = env.File("$BUILD_DIR/flash_image.bin").abspath  # type: ignore
 
 
 def build_emulator_image(source, target, env):
@@ -32,17 +32,17 @@ def build_emulator_image(source, target, env):
             bootloader_offset = "0x0000"
 
     command = [
-        os.path.join(esptool_dir, 'esptool.py'),
-        '--chip', build_mcu,
-        'merge_bin',
-        '-o', flash_image,
-        '--fill-flash-size', board_config.get("upload.flash_size"),
-        '--flash_size', 'keep',
-        '--flash_mode', env['BOARD_FLASH_MODE'], # type: ignore
-        '--flash_freq', '40m',
-        bootloader_offset, env.File('$BUILD_DIR/bootloader.bin').abspath, # type: ignore
-        '0x8000', env.File('$BUILD_DIR/partitions.bin').abspath, # type: ignore
-        '0x10000', env.File('$BUILD_DIR/firmware.bin').abspath, # type: ignore
+        os.path.join(esptool_dir, "esptool.py"),
+        "--chip", build_mcu,
+        "merge_bin",
+        "-o", flash_image,
+        "--fill-flash-size", board_config.get("upload.flash_size"),
+        "--flash_size", "keep",
+        "--flash_mode", env["BOARD_FLASH_MODE"],  # type: ignore
+        "--flash_freq", "40m",
+        bootloader_offset, env.File("$BUILD_DIR/bootloader.bin").abspath,  # type: ignore
+        "0x8000", env.File("$BUILD_DIR/partitions.bin").abspath,  # type: ignore
+        "0x10000", env.File("$BUILD_DIR/firmware.bin").abspath,  # type: ignore
     ]
 
     print(f"Building image with command:\n {' '.join(command)}")
@@ -60,17 +60,17 @@ def start_qemu_emulator(source, target, env):
 
     # QEMU command and arguments
     qemu_cmd = [
-        'qemu-system-xtensa',
-        '-machine', build_mcu,
+        "qemu-system-xtensa",
+        "-machine", build_mcu,
         "-drive", f"file={flash_image},if=mtd,format=raw",
-        '-display', 'gtk',
-        '-serial', 'stdio',
-        '-d', 'guest_errors',
+        "-display", "gtk",
+        "-serial", "stdio",
+        "-d", "guest_errors",
     ]
-    
+
     # print(env.Dump())
-    if env.GetProjectOption("build_type") == 'debug':
-        qemu_cmd = qemu_cmd + [ '-s', '-S' ]
+    if env.GetProjectOption("build_type") == "debug":
+        qemu_cmd = qemu_cmd + ["-s", "-S"]
 
     print("Starting ESP32 QEMU emulator...")
     print(f"Emulator Command: {' '.join(qemu_cmd)}")
@@ -88,12 +88,12 @@ def start_qemu_emulator(source, target, env):
         return 1
 
 
-env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", build_emulator_image) # type: ignore
+env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", build_emulator_image)  # type: ignore
 
 # DO NOT interfere with Unity tests conducted by pio
-if env["BUILD_TYPE"] != "debug, test": # type: ignore
+if env["BUILD_TYPE"] != "debug, test":  # type: ignore
     # Replace the upload command with our custom function
-    env.Depends( # type: ignore
+    env.Depends(  # type: ignore
         "upload",
         [
             "$BUILD_DIR/bootloader.bin",
@@ -101,4 +101,4 @@ if env["BUILD_TYPE"] != "debug, test": # type: ignore
             "$BUILD_DIR/${PROGNAME}.bin",
         ],
     )
-    env.Replace(UPLOADCMD=start_qemu_emulator) # type: ignore
+    env.Replace(UPLOADCMD=start_qemu_emulator)  # type: ignore
