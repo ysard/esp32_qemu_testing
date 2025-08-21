@@ -13,11 +13,14 @@ Import("env") # type: ignore
 platform = env.PioPlatform() # type: ignore
 board_config = env.BoardConfig() # type: ignore
 build_mcu = board_config.get("build.mcu")
+# Get the compiled firmware path
+flash_image = env.File("$BUILD_DIR/flash_image.bin").abspath # type: ignore
 
-def build_emulator_image(firmware_path):
+
+def build_emulator_image(source, target, env):
     """Build a flash image for use in the emulator"""
 
-    ESPTOOL_DIR = platform.get_package_dir("tool-esptoolpy")
+    esptool_dir = platform.get_package_dir("tool-esptoolpy")
 
     # Determine the bootloader offset based on the target device
     match build_mcu:
@@ -28,12 +31,12 @@ def build_emulator_image(firmware_path):
         case _:
             bootloader_offset = "0x0000"
 
-    command = [ 
-        os.path.join(ESPTOOL_DIR, 'esptool.py'),
+    command = [
+        os.path.join(esptool_dir, 'esptool.py'),
         '--chip', build_mcu,
         'merge_bin',
-        '-o', firmware_path,
-        '--fill-flash-size', board_config.get("upload.flash_size"), 
+        '-o', flash_image,
+        '--fill-flash-size', board_config.get("upload.flash_size"),
         '--flash_size', 'keep',
         '--flash_mode', env['BOARD_FLASH_MODE'], # type: ignore
         '--flash_freq', '40m',
@@ -53,12 +56,7 @@ def build_emulator_image(firmware_path):
 
 def start_qemu_emulator(source, target, env):
     """Custom upload function that starts ESP32 QEMU instead of flashing"""
-    
-    # Get the compiled firmware path
-    flash_image = env.File('$BUILD_DIR/flash_image.bin').abspath
-    if not build_emulator_image(flash_image):
-        return
-    
+
     # QEMU command and arguments
     qemu_cmd = [
         'qemu-system-xtensa',
@@ -88,6 +86,18 @@ def start_qemu_emulator(source, target, env):
         print("QEMU not found. Please install or build qemu-system-xtensa")
         return 1
 
-# Replace the upload command with our custom function
-env.Depends("upload", ["$BUILD_DIR/bootloader.bin", "$BUILD_DIR/partitions.bin", "$BUILD_DIR/${PROGNAME}.bin"])   # type: ignore
-env.Replace(UPLOADCMD=start_qemu_emulator)   # type: ignore
+
+env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", build_emulator_image) # type: ignore
+
+# DO NOT interfere with Unity tests conducted by pio
+if env["BUILD_TYPE"] != "debug, test": # type: ignore
+    # Replace the upload command with our custom function
+    env.Depends( # type: ignore
+        "upload",
+        [
+            "$BUILD_DIR/bootloader.bin",
+            "$BUILD_DIR/partitions.bin",
+            "$BUILD_DIR/${PROGNAME}.bin",
+        ],
+    )
+    env.Replace(UPLOADCMD=start_qemu_emulator) # type: ignore
