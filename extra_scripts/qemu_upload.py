@@ -46,7 +46,7 @@ def build_emulator_image(source, target, env):
     ]
 
     print(f"Building image with command:\n {' '.join(command)}")
-    result = subprocess.run(command, capture_output=True)
+    result = subprocess.run(command, capture_output=True, check=True)
     if result.returncode != 0:
         print(result.stdout)
         return False
@@ -71,12 +71,12 @@ def start_qemu_emulator(source, target, env):
     if env.GetProjectOption("build_type") == 'debug':
         qemu_cmd = qemu_cmd + [ '-s', '-S' ]
 
-    print(f"Starting ESP32 QEMU emulator...")
+    print("Starting ESP32 QEMU emulator...")
     print(f"Emulator Command: {' '.join(qemu_cmd)}")
-    
+
     try:
         # Start QEMU (this will block until QEMU exits)
-        result = subprocess.run(qemu_cmd, check=True)
+        _ = subprocess.run(qemu_cmd, check=True)
         print("QEMU emulator started successfully")
         return 0
     except subprocess.CalledProcessError as e:
