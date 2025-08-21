@@ -48,11 +48,12 @@ def build_emulator_image(source, target, env):
     print(f"Building image with command:\n {' '.join(command)}")
     result = subprocess.run(command, capture_output=True, check=True)
     if result.returncode != 0:
+        print("ERROR:")
         print(result.stdout)
-        return False
-    else:
-        print("Image built")
-        return True
+        return 1
+    print("Image built")
+    return 0
+
 
 def start_qemu_emulator(source, target, env):
     """Custom upload function that starts ESP32 QEMU instead of flashing"""
