@@ -70,7 +70,7 @@ def start_qemu_emulator(source, target, env):
 
     # print(env.Dump())
     if env.GetProjectOption("build_type") == "debug":
-        qemu_cmd = qemu_cmd + ["-s", "-S"]
+        qemu_cmd += ["-s", "-S"]
 
     print("Starting ESP32 QEMU emulator...")
     print(f"Emulator Command: {' '.join(qemu_cmd)}")
