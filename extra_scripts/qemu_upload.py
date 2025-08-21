@@ -91,7 +91,7 @@ def start_qemu_emulator(source, target, env):
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", build_emulator_image)  # type: ignore
 
 # DO NOT interfere with Unity tests conducted by pio
-if env["BUILD_TYPE"] != "debug, test":  # type: ignore
+if "test" in env["BUILD_TYPE"]:  # type: ignore
     # Replace the upload command with our custom function
     env.Depends(  # type: ignore
         "upload",
