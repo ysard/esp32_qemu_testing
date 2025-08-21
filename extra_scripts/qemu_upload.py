@@ -64,7 +64,7 @@ def start_qemu_emulator(source, target, env):
         "-machine", build_mcu,
         "-drive", f"file={flash_image},if=mtd,format=raw",
         "-display", "gtk",
-        "-serial", "stdio",
+        "-serial", "mon:stdio",
         "-d", "guest_errors",
     ]
 
