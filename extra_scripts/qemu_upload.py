@@ -68,6 +68,9 @@ def start_qemu_emulator(source, target, env):
         "-d", "guest_errors",
     ]
 
+    if "-DBOARD_HAS_PSRAM" in board_config.get("build.extra_flags"):
+        qemu_cmd += ["-m", "16M"]
+
     # print(env.Dump())
     if env.GetProjectOption("build_type") == "debug":
         qemu_cmd += ["-s", "-S"]
