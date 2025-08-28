@@ -71,6 +71,10 @@ def start_qemu_emulator(source, target, env):
     if "-DBOARD_HAS_PSRAM" in board_config.get("build.extra_flags"):
         qemu_cmd += ["-m", "16M"]
 
+    # Octal PSRAM detected
+    if "opi" == board_config.get("build.psram_type"):
+        qemu_cmd += ["-global", "driver=ssi_psram,property=is_octal,value=true"]
+
     # print(env.Dump())
     if env.GetProjectOption("build_type") == 'debug':
         qemu_cmd = qemu_cmd + [ '-s', '-S' ]
