@@ -43,6 +43,8 @@ def build_emulator_image(source, target, env):
         bootloader_offset, env.File("$BUILD_DIR/bootloader.bin").abspath,  # type: ignore
         "0x8000", env.File("$BUILD_DIR/partitions.bin").abspath,  # type: ignore
         "0x10000", env.File("$BUILD_DIR/firmware.bin").abspath,  # type: ignore
+        # Networking for httpd server
+        "-nic", "user,model=open_eth,id=lo0,hostfwd=tcp:127.0.0.1:80-:80"
     ]
 
     print(f"Building image with command:\n {' '.join(command)}")
